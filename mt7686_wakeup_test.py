@@ -13,19 +13,50 @@ file_count = 0
 pcm_window = 90000000*(32000+16000)
 stop_flag_int = 0
 
+def separation_mixing_file(file_name):
+	file = open(file_name, "rb")
+	file_org = open(r'D:\7686_record_audio\org_%d.pcm'%file_count, "wb")
+	file_aec = open(r'D:\7686_record_audio\aec_%d.pcm'%file_count, "wb")
+	tag1 = "pcm_str"
+	tag2 = "aec_str"
+	while True:
+		try:
+			head = file.read(7)
+			x = file.read(4)
+			len = x[0] + x[1] * 2 ** 8 + x[2] * 2 ** 16 + x[3] * 2 ** 24
+			buffer = file.read(len)
+			if tag1 == head.decode():
+				file_org.write(buffer)
+			elif tag2 == head.decode():
+				file_aec.write(buffer)
+			else:
+				print(head.decode())
+		except Exception as e:
+			print(e)
+			break
+
+	file.close()
+	file_org.close()
+	file_aec.close()
+
+
 def save_pcm_file(_buffer):
 	global file_count
+	receive_path = '7686_record_audio'
 
 	if None == _buffer:
 		return
+	try:
+		os.mkdir('D:\\%s'%receive_path)
+	except Exception as e:
+		print(e)
 
-	str_file = r'D:\received_%d.pcm' % (file_count)
-
+	str_file = "D:\%(dir)s\_received_%(count)d.pcm" % ({"dir": receive_path, "count": file_count})
+	print(str_file)
 	with open(str_file, 'wb') as f:
 		f.write(_buffer)
-
 	print("xxxxxxxxxxxxxx %s xxxxxxxxxxxx" %str_file)
-
+	separation_mixing_file(str_file)
 	file_count += 1
 
 @asyncio.coroutine
@@ -70,20 +101,11 @@ def test_main(deviceid, ipaddress, port, uart):
 	if 'auto' == ipaddress:
 		ipaddress = socket.gethostbyname(socket.gethostname())
 
-	if 'auto' == uart:
-		uart = [i[0] for i in serial.tools.list_ports.comports()]
-
-		#if 0 == len(uart): err += 1
-		#else: uart = uart[0]
-
 	mqtt = MyMqtt(deviceid, 'gh_5e9c85479d21')
 	mqtt.start()
 
 	mqtt.recorderBypassDisable(mqtt.devId)
 	mqtt.recorderBypassEnable(mqtt.devId, VOICE_FILE_TYPE_DUI, ipaddress, port, True)
-
-	#comm = CommSrvProcessor(uart)
-	#comm.Start()
 
 	while True:
 		#time.sleep(0.5)
@@ -93,24 +115,12 @@ def test_main(deviceid, ipaddress, port, uart):
 		elif 'start' == stop_flag:
 			mqtt.recorderBypassDisable(mqtt.devId)
 			mqtt.recorderBypassEnable(mqtt.devId, VOICE_FILE_TYPE_DUI, ipaddress, port, True)
-			#exit(0)
-		#print("--sleep--")
-	#while True:
-	#	if True == comm.WaitResp('player_path: ImHere.mp3', False, 10):
-	#		mqtt.recorderBypassDisable(mqtt.devId)
-	#		mqtt.recorderBypassEnable(mqtt.devId, VOICE_FILE_TYPE_DUI, ipaddress, port, True)
-	
 
 if __name__ == "__main__":
 	deviceid	= sys.argv[1] if len(sys.argv) > 1 else '00000000400120181120704f08009235'
 	ipaddress 	= sys.argv[2] if len(sys.argv) > 2 else '192.168.8.110'
 	port        = sys.argv[3] if len(sys.argv) > 3 else '8005'
 	uart     	= sys.argv[4] if len(sys.argv) > 4 else 'auto'
-
-	#deviceid = input("设备ID：")
-	#ipaddress = input("ip地址：")
-	#port = input("端口：")
-	#uart =	input("串口号：")
 	port = int(port)
 	#ipaddress = '192.168.8.102'
 	ws_thread = threading.Thread(target=test_main, args=(deviceid, ipaddress, port, uart,))
@@ -121,12 +131,3 @@ if __name__ == "__main__":
 	loop = asyncio.get_event_loop()
 	loop.run_until_complete(start_server)
 	loop.run_forever()
-
-	#while True:
-	#	start_flag = input("是否停止：")
-	#	if 'stop' == start_flag:
-	#		stop_flag_int = 1
-	#		exit(0)
-
-	#loop.run_forever()
-	#time.sleep(10000)
