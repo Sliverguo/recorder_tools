@@ -1,0 +1,59 @@
+import os
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+	file = open(r'D:\received_0.pcm',"rb")
+	file_org = open(r'D:\org.pcm', "wb")
+	file_aec = open(r'D:\aec.pcm', "wb")
+	tag1 = "pcm_str"
+	tag2 = "aec_str"
+
+
+	size = os.path.getsize(r'D:\received_0.pcm')
+	#print(os.path.getsize(r'D:\received_0.pcm'))
+
+	org_buffer = b''
+
+	# x = file.read(7)
+	# print(x.decode())
+	# x = file.read(4)
+	# print(x)
+	# print(x[0])
+	# print(x[1])
+	# print(x[2])
+	# print(x[3])
+	# len = x[0] + x[1]*2**8 + x[2]*2**16 + x[3]*2**24
+	# print(len)
+	# x = file.read(4096)
+	# x = file.read(7)
+	# print(x)
+	# x = file.read(4)
+	# print(x)
+
+	while True:
+		try :
+			head = file.read(7)
+			x = file.read(4)
+			len = x[0] + x[1]*2**8 + x[2]*2**16 + x[3]*2**24
+			buffer = file.read(len)
+			if tag1 == head.decode():
+				file_org.write(buffer)
+			elif tag2 == head.decode():
+				file_aec.write(buffer)
+			else:
+				print(head.decode())
+		except Exception as e:
+			print(e)
+			break
+
+
+	file.close()
+	file_org.close()
+	file_aec.close()

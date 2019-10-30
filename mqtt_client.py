@@ -66,8 +66,13 @@ class MyMqtt(object):
 		self.client.subscribe(self.devId)
 
 	def on_message(self, client, userdata, msg):
-		recv = msg.payload.decode();
-		recv = json.loads(recv)
+		recv = msg.payload.decode()
+		try:
+			recv = json.loads(recv)
+		except:
+			print("xxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+			print(recv)
+			print("xxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
 		ignore = False
 		if 'deviceid' in recv and recv['deviceid'] != self.devId:
@@ -148,20 +153,20 @@ class MyMqtt(object):
 	def recorderBypassEnable(self,devId,_tp,host,port,preproc): return self.transfer(devId, {'action':'com_recorder_bypass_enable','type':_tp,'host':host,'port':port,'preproc':preproc})
 	def recorderBypassDisable(self,devId):    					return self.transfer(devId, {'action':'com_recorder_bypass_disable'})
 
-if "__main__"==__name__:
+if __name__=="__main__":
 	#mqtt = MyMqtt('00000000400120181120704f080000b0', 'gh_5e9c85479d21')
 	#mqtt = MyMqtt('00000000400120181120704f080015df', 'gh_5e9c85479d21')
 	#mqtt = MyMqtt('00000000400120181120704f080000b0', 'gh_b47c524e9c3a')
-	mqtt = MyMqtt('00000000a00120190530704f08002657', 'gh_b47c524e9c3a')
+	mqtt = MyMqtt('00000000400120181120704f08001ccc', 'gh_5e9c85479d21')
 	mqtt.start()
 	devId = mqtt.devId
 	
 	#mqtt.testPlayStop(devId)
 	#mqtt.devicePlay(devId, 'http://47.98.36.22/432506345.mp3')
 	#mqtt.devicePlay(devId, 'http://47.98.36.22/186154.mp3')
-	#mqtt.devicePlay(devId, 'http://47.98.36.22/22472149.mp3')
+	mqtt.devicePlay(devId, 'http://47.98.36.22/22472149.mp3')
 	#mqtt.devicePlay(devId, 'http://47.98.45.59/28508590.mp3')
-	mqtt.devicePlay(devId, 'http://192.168.60.7:8000/music/mp3_test/1khz.mp3')
+	#mqtt.devicePlay(devId, 'http://192.168.60.7:8000/music/mp3_test/1khz.mp3')
 	#mqtt.devicePlay(devId, 'http://image.kaolafm.net/mz/mp3_32/201803/a4cf6694-dc1e-4514-8beb-4a39ee9652f8.mp3')
 	#mqtt.deviceSeekProgress(devId, 50)
 	#mqtt.deviceEnableProgress(devId, 0)
@@ -172,12 +177,14 @@ if "__main__"==__name__:
 	#mqtt.testPlayStart(devId, 'CountDown.mp3', AUDIO_SRC_FLAG_PROMPT)
 	#mqtt.testPlayStart(devId, 'SD:/CountDown.mp3', AUDIO_SRC_FLAG_LOCAL)
 	#mqtt.deviceUpgrade(devId, 'http://192.168.60.7:8000/0004_001_v011_V0.1.1.bin', 'V1.1.1')
-	#mqtt.showCpu(devId)
+	mqtt.showCpu(devId)
 	#mqtt.devicePowerOff(devId)
 
+	#mqtt.testPcmRecorderStart(devId, "SD:/orginal.pcm", 32000, 2)
+	#mqtt.testPcmRecorderStop(devId)
 	#mqtt.memTraceStart(devId)
 	#mqtt.memTraceStop(devId)
-	#mqtt.recorderBypassEnable(devId, VOICE_FILE_TYPE_DUI, "192.168.60.7", 8003, False)
-	time.sleep(5)
+	#mqtt.recorderBypassEnable(devId, VOICE_FILE_TYPE_DUI, "192.168.60.7", 8003, True)
+	time.sleep(1)
 	#mqtt.recorderBypassDisable(devId)
 	#time.sleep(100000)
